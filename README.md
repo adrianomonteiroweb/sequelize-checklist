@@ -162,3 +162,89 @@ ou
 ```bash
 yarn sequelize db:migrate
 ```
+
+### Crie o model User.js
+
+Na pasta "models", crie o arquivo "User.js" e crie a função de definição de tipos de dados referente a tabela de usuário.
+
+```js
+module.exports = (sequelize, DataTypes) => {
+  const User = sequelize.define("User", {
+    name: DataTypes.STRING,
+    email: DataTypes.STRING,
+    password_hash: DataTypes.STRING,
+  });
+
+  return User;
+};
+```
+
+# ATENÇãO!!!
+
+### Vamos configurar o arquivo index de configuração na pasta models.
+
+Como mudamos o arquivo de configuração para .js para receber variáveis de ambiente posteriormente, vamos precisar fazer algumas alterações no arquivo index da pasta model. Isso porque o tal arquivo index, serve para fazer com que os models que criarmos dentro da pasta models, fiquem disponíveis para o sequelize.
+
+#### Podemos remover a linha 7:
+
+```js
+const env = process.env.NODE_ENV || "development";
+```
+
+#### Na nova linha 7, remova o dirname, o array de env e aponte agora o caminho para o arquivo na pasta config:
+
+Antes:
+
+```js
+const config = require(__dirname + "/../config/config.json")[env];
+```
+
+Depois:
+
+```js
+const config = require("../../config/database");
+```
+
+#### No código da linha 10 à 20. Vamos remover a condição IF deixando apenas o resultado de condição verdadeira armazenado em uma const. Além disso, vamos passar ao sequelize os parâmetros de forma diferente.
+
+Antes:
+
+```js
+let sequelize;
+if (config.use_env_variable) {
+  sequelize = new Sequelize(process.env[config.use_env_variable], config);
+} else {
+  sequelize = new Sequelize(
+    config.database,
+    config.username,
+    config.password,
+    config
+  );
+}
+```
+
+Depois:
+
+```js
+const sequelize = new Sequelize(
+  config.database,
+  config.username,
+  config.password,
+  config
+);
+```
+
+### Import o model User e é hora de testar, como por exemplo em alguma rota:
+
+```js
+const routes = require("express").Router();
+const { User } = require("./app/models");
+
+User.create({
+  name: "Adriano",
+  email: "adrianomonteirodev@gmail.com",
+  password_hash: "12345678910",
+});
+
+module.exports = routes;
+```
