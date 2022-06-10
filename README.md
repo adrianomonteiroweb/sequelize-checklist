@@ -64,3 +64,101 @@ module.exports = {
   "migrations-path": path.resolve("src", "database", "migrations"),
 };
 ```
+
+### Configurações:
+
+Dentro da pasta "config", o arquivo em formado .json estará por padrão com 3 ambientes a ser configurados. Mas vamos iniciar apenas com 1 ambiente e no formato .js já que vamos precisar importar variáveis de ambiente para deixar nossa configuração mais dinâmica.
+
+Atenção para informar corretamente os dados de seu banco, como host, user, password, database e o dialeto, que no exemplo abaixo é postgres.
+
+```js
+module.exports = {
+  host: "127.0.0.1",
+  username: "myuser",
+  password: "mypassword",
+  database: "mydatabase",
+  dialect: "postgres",
+  operatorsAliases: false,
+  logging: false,
+  define: {
+    timestamps: true,
+    unserscored: true,
+    unserscoredAll: true,
+  },
+};
+```
+
+### Criando uma migration.
+
+Que é um controle de versão no nosso banco de dados referente a dados específicos, como no exemplo a seguir, "users". Evitando problemas de gerenciamento de dados desatualizados pelo uso de mais de 1 desenvolvedor.
+
+```bash
+npx sequelize migration:create --name=users-create
+```
+
+ou
+
+```bash
+yarn sequelize migration:create --name=users-create
+```
+
+Depois de criada, vamos configurar:
+
+```js
+"use strict";
+
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    // cria a tabela com o nome "users"
+    return queryInterface.createTable("users", {
+      id: {
+        type: Sequelize.INTEGER, // tipo
+        primaryKey: true, // chave primária
+        autoIncrement: true, // auto-incrementável
+        allowNull: false, // campo obrigatório
+      },
+      name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      email: {
+        type: Sequelize.STRING,
+        unique: true, // Valor não pode se repetir
+        allowNull: false,
+      },
+      password_hash: {
+        // senha incriptada
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      created_at: {
+        // data de criação
+        type: Sequelize.DATE,
+        allowNull: false,
+      },
+      updated_at: {
+        // data de atualização
+        type: Sequelize.DATE,
+        allowNull: false,
+      },
+    });
+  },
+
+  // dropa (deleta) a tabela
+  async down(queryInterface, Sequelize) {
+    queryInterface.dropTable("users");
+  },
+};
+```
+
+Agora podemos executar a tabela com o comando:
+
+```bash
+npx sequelize db:migrate
+```
+
+ou
+
+```bash
+yarn sequelize db:migrate
+```
